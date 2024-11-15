@@ -5,13 +5,10 @@ import java.util.concurrent.*;
 
 public class AuctionServer {
     private static final int PORT = 12345;
-    private static final List<ClientHandler> clients = new ArrayList<>();
+    private static final List<ClientHandler> clients = Collections.synchronizedList(new ArrayList<>());
 
-    //경매품목 - 굿즈(쿠,건덕이,건구스,건붕이)
     private static final List<String> goods = Arrays.asList("쿠", "건구스", "건덕이", "건붕이");
-    //경매품목 - 아이템(건구스의지원금, 황소의분노, 일감호의기적, 스턴건)
     private static final List<String> items = Arrays.asList("건구스의 지원금", "황소의 분노", "일감호의 기적", "스턴건");
-    //경매품목 - 아이템
     private static String currentItem;
     private static int currentBid = 0;
     private static ClientHandler highestBidder = null;
@@ -20,8 +17,7 @@ public class AuctionServer {
         ServerSocket listener = new ServerSocket(PORT);
         System.out.println("서버가 실행 중입니다");
 
-        // 경매 라운드를 자동 시작 (예시로 10초마다 새로운 경매 시작)
-        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(AuctionServer::startNewAuctionRound, 0, 10, TimeUnit.SECONDS);
+//        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(AuctionServer::startNewAuctionRound, 0, 10, TimeUnit.SECONDS);
 
         try {
             while (true) {
@@ -29,37 +25,33 @@ public class AuctionServer {
 
                 // 클라이언트를 관리하는 핸들러 생성 및 추가
                 ClientHandler clientHandler = new ClientHandler(clientSocket);
-                clients.add(clientHandler);
+                synchronized (clients) {
+                    clients.add(clientHandler);
+                }
 
                 // 새로운 스레드로 클라이언트 핸들러 실행
                 new Thread(clientHandler).start();
+
+                // 서버 초기 상태에서 첫 경매 라운드 시작 (테스트용으로 2명인경우 시작)
+                if (clients.size() == 1 && currentItem == null) {
+                    startNewAuctionRound();
+                }
+
+                // 서버 초기 상태에서 첫 경매 라운드 시작 (실제는 이걸써야함)
+//                if (clients.size() == 4 && currentItem == null) {
+//                    startNewAuctionRound();
+//                }
             }
         } finally {
             listener.close();
         }
     }
 
-    //주기적으로 새로운 경매품목을 랜덤으로 선택하고 클라이언트에게 알림
     private static void startNewAuctionRound() {
         Random random = new Random();
-
-        // 60% 확률로 굿즈, 40% 확률로 아이템 선택
-        if (random.nextInt(100) < 60) {
-            // 굿즈 선택: 4개 중 하나를 동일한 확률로 선택
-            currentItem = goods.get(random.nextInt(goods.size()));
-        } else {
-            // 아이템 선택(지원금10%, 외 나머지3개 30%동일)
-            int itemChance = random.nextInt(100);
-            if (itemChance < 10) {
-                currentItem = "건구스의 지원금"; // 10% 확률
-            } else if (itemChance < 40) {
-                currentItem = "황소의 분노"; // 30% 확률
-            } else if (itemChance < 70) {
-                currentItem = "일감호의 기적"; // 30% 확률
-            } else {
-                currentItem = "스턴건"; // 30% 확률
-            }
-        }
+        currentItem = random.nextInt(100) < 60
+                ? goods.get(random.nextInt(goods.size()))
+                : items.get(random.nextInt(items.size()));
 
         currentBid = 0;
         highestBidder = null;
@@ -67,17 +59,31 @@ public class AuctionServer {
     }
 
     public static synchronized void placeBid(ClientHandler client, int bidAmount) {
-        if (bidAmount > currentBid) {
-            currentBid = bidAmount;
-            highestBidder = client;
-            broadcastMessage("새로운 최고 입찰: " + bidAmount + "원 - " + client.getClientName());
+        // 같은 사람이 두 번 연속 입찰할 수 없음
+        if (client == highestBidder) {
+            client.sendMessage("연속으로 입찰할 수 없습니다.");
+            return;
         }
+
+        // 잔액 확인
+        if (client.getBalance() < bidAmount) {
+            client.sendMessage("잔액 부족으로 호가 실패.");
+            return;
+        }
+
+        // 잔액 차감 및 입찰 정보 갱신
+        client.decreaseBalance(bidAmount);
+        currentBid += bidAmount;
+        highestBidder = client;
+
+        broadcastMessage("현재입찰가: " + currentBid + "원 (+" + bidAmount + ")");
     }
 
-    //브로드캐스트
-    public static void broadcastMessage(String message) {
-        for (ClientHandler client : clients) {
-            client.sendMessage(message);
+    public static synchronized void broadcastMessage(String message) {
+        synchronized (clients) {
+            for (ClientHandler client : clients) {
+                client.sendMessage(message);
+            }
         }
     }
 
@@ -87,11 +93,22 @@ public class AuctionServer {
         } else {
             broadcastMessage("낙찰자 없음");
         }
-        for (ClientHandler client : clients) {
-            if (!client.isParticipating()) {
-                client.addFunds(5);
+
+        synchronized (clients) {
+            for (ClientHandler client : clients) {
+                if (!client.isParticipating()) {
+                    client.addFunds(5);
+                }
             }
         }
+
         startNewAuctionRound();
+    }
+
+    public static synchronized void removeClient(ClientHandler client) {
+        synchronized (clients) {
+            clients.remove(client);
+            broadcastMessage(client.getClientName() + " 님이 연결을 종료했습니다.");
+        }
     }
 }

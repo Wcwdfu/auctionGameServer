@@ -23,6 +23,10 @@ public class ClientHandler implements Runnable {
         return clientName;
     }
 
+    public int getBalance() {
+        return balance;
+    }
+
     public boolean isParticipating() {
         return participating;
     }
@@ -30,6 +34,11 @@ public class ClientHandler implements Runnable {
     public void addFunds(int amount) {
         balance += amount;
         sendMessage("잔액 추가됨: " + amount + "원. 현재 잔액: " + balance + "원");
+    }
+
+    public void decreaseBalance(int amount){
+        balance-=amount;
+        sendMessage("잔액 차감: " + amount + "원. 현재 잔액: " + balance + "원");
     }
 
     public void sendMessage(String message) {
@@ -40,8 +49,6 @@ public class ClientHandler implements Runnable {
     public void run() {
         try {
             clientName = in.readLine();
-
-            System.out.println("클라이언트 \"" + clientName+ "\" 가 연결되었습니다: " + socket);
             AuctionServer.broadcastMessage(clientName + " 님이 참가했습니다.");
 
             while (true) {
@@ -63,7 +70,7 @@ public class ClientHandler implements Runnable {
                     participating = false;
                     sendMessage("경매에 불참했습니다.");
                 } else if (command.startsWith("채팅")) {
-                    String chatMessage = command.substring(3); // "채팅 " 부분을 제거
+                    String chatMessage = command.substring(3);
                     AuctionServer.broadcastMessage("채팅 " + clientName + ": " + chatMessage);
                 }
             }
@@ -75,6 +82,8 @@ public class ClientHandler implements Runnable {
             } catch (IOException e) {
                 System.out.println("소켓 종료 오류");
             }
+            AuctionServer.removeClient(this); // 연결 종료 시 클라이언트 제거
         }
     }
+
 }
