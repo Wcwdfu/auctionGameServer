@@ -61,7 +61,6 @@ public class ClientHandler implements Runnable {
                 } else if (command.startsWith("호가")) {
                     int bidAmount = Integer.parseInt(command.split(" ")[1]);
                     if (balance >= bidAmount) {
-                        balance -= bidAmount;
                         AuctionServer.placeBid(this, bidAmount);
                     } else {
                         sendMessage("잔액 부족으로 호가 실패.");

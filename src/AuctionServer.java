@@ -33,7 +33,7 @@ public class AuctionServer {
                 new Thread(clientHandler).start();
 
                 // 서버 초기 상태에서 첫 경매 라운드 시작 (테스트용으로 2명인경우 시작)
-                if (clients.size() == 1 && currentItem == null) {
+                if (clients.size() == 2 && currentItem == null) {
                     startNewAuctionRound();
                 }
 
@@ -59,6 +59,8 @@ public class AuctionServer {
     }
 
     public static synchronized void placeBid(ClientHandler client, int bidAmount) {
+        System.out.println("호가 요청: " + client.getClientName() + ", 금액: " + bidAmount);
+        System.out.println("호가 전 잔액: " + client.getBalance());
         // 같은 사람이 두 번 연속 입찰할 수 없음
         if (client == highestBidder) {
             client.sendMessage("연속으로 입찰할 수 없습니다.");
