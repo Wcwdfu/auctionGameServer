@@ -44,6 +44,12 @@ public class MatchingThread implements Runnable {
             Output.INSTANCE.broadcastMessage("Matching;" + matchingQueue);
             if (matchingQueue.getMatchingSize() == 4) {
                 informMatching(out);
+                ClientHandler clientHandler = new ClientHandler(clientSocket);  //clientHandler에서 생성자에서 User생성
+                User user = clientHandler.getCurrentUser();
+                System.out.println(user.getName() +" ");
+                waitUsers.add(user);
+                clientHandler.start();
+                System.out.println(waitUsers.size())
             }
         } catch (Exception e) {
             e.printStackTrace();
