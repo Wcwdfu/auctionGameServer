@@ -1,11 +1,10 @@
-import java.io.IOException;
+package server;
+
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 
-//접속한 User
+//접속한 server.User
 public class User {
     private Socket sock;
     private ClientHandler clientHandler;

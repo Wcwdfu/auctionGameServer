@@ -1,7 +1,8 @@
+package server;
+
 import java.io.*;
 import java.net.*;
-import java.util.LinkedList;
-import java.util.Queue;
+import server.matching.MatchingUser;
 
 
 public class ClientHandler extends Thread {
@@ -13,15 +14,15 @@ public class ClientHandler extends Thread {
     private String userCommand = null;
 
 
-    public ClientHandler(Socket socket) throws IOException {
+    public ClientHandler(Socket socket, MatchingUser matchingUser) throws IOException {
         this.socket = socket;
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.out = new PrintWriter(socket.getOutputStream(), true);
 
         //User는 접속하자마자 clientName을 보냄
-        String clientName = in.readLine();
+        String clientName = matchingUser.getName();
 
-        System.out.println("클라이언트 \"" + clientName+ "\" 가 연결되었습니다: " + socket);
+        //System.out.println("클라이언트 \"" + clientName+ "\" 가 연결되었습니다: " + socket);
 
         currentUser = new User(socket, false, clientName, this);
 
@@ -89,7 +90,7 @@ public class ClientHandler extends Thread {
 //                else if (command.startsWith("호가")) {
 //                    int bidAmount = Integer.parseInt(command.split(" ")[1]);
 //                    //gameThread가 알아서 계산하게 시킴
-//                    AuctionServer.gameThread.placeBid(currentUser, bidAmount);
+//                    server.AuctionServer.gameThread.placeBid(currentUser, bidAmount);
 //                }
 //                else if (command.startsWith("불참여")) {
 //                    currentUser.setParticipating(false);
@@ -107,10 +108,9 @@ public class ClientHandler extends Thread {
             try {
                 socket.close();
 
-                if(AuctionServer.waitUsers.contains(currentUser)) {
+                if (AuctionServer.waitUsers.contains(currentUser)) {
                     AuctionServer.waitUsers.remove(currentUser);
-                }
-                else if(AuctionServer.bidUsers.contains(currentUser)) {
+                } else if (AuctionServer.bidUsers.contains(currentUser)) {
                     AuctionServer.bidUsers.remove(currentUser);
 
                 }

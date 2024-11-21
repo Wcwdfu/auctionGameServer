@@ -1,13 +1,14 @@
-import java.io.PrintWriter;
-//import java.util.Timer;
-import java.util.TimerTask;
+package server;
+
+//import java.util.server.Timer;
+
 
 public class TimerManager {
 
-//    private Timer participating_timer;
-//    private Timer participating_end_timer;
-//    private Timer bidding_timer;
-//    private Timer bidding_end_timer;
+//    private server.Timer participating_timer;
+//    private server.Timer participating_end_timer;
+//    private server.Timer bidding_timer;
+//    private server.Timer bidding_end_timer;
 
     private int p_time = 6;
     private int b_time = 4;
@@ -35,7 +36,7 @@ public class TimerManager {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-//        ClientHandler.bidUsers_broadcastMessage("응찰 마감");
+//        server.ClientHandler.bidUsers_broadcastMessage("응찰 마감");
     }
 
     public void bidding() {
@@ -46,7 +47,7 @@ public class TimerManager {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-//        ClientHandler.bidUsers_broadcastMessage("입찰 마감");
+//        server.ClientHandler.bidUsers_broadcastMessage("입찰 마감");
     }
 
     public void interrupt() {
@@ -59,11 +60,11 @@ public class TimerManager {
 //        @Override
 //        public void run() {
 //            if(p_time>6) {
-//                ClientHandler.bidUsers_broadcastMessage(p_time+"초 남았습니다.");
+//                server.ClientHandler.bidUsers_broadcastMessage(p_time+"초 남았습니다.");
 //                p_time--;
 //            }
 //            else if(p_time==0) {
-//                ClientHandler.bidUsers_broadcastMessage("응찰 마감");
+//                server.ClientHandler.bidUsers_broadcastMessage("응찰 마감");
 //                p_time = 6;
 //                participating_timer.cancel();
 //            }
@@ -82,11 +83,11 @@ public class TimerManager {
 //        @Override
 //        public void run() {
 //            if(b_time>4) {
-//                ClientHandler.bidUsers_broadcastMessage(b_time + "초 남았습니다.");
+//                server.ClientHandler.bidUsers_broadcastMessage(b_time + "초 남았습니다.");
 //                b_time--;
 //            }
 //            else if(b_time==0) {
-//                ClientHandler.bidUsers_broadcastMessage("입찰 마감");
+//                server.ClientHandler.bidUsers_broadcastMessage("입찰 마감");
 //                b_time = 4;
 //                bidding_timer.cancel();
 //            }
@@ -104,15 +105,15 @@ public class TimerManager {
 
     
 //    public void participating2() {
-//        participating_timer = new Timer();
-////        participating_end_timer = new Timer();
+//        participating_timer = new server.Timer();
+////        participating_end_timer = new server.Timer();
 //        participating_timer.schedule(participating_task, 0, 1000);
 ////        participating_end_timer.schedule(participating_end_task, 6500);
 //    }
 //
 //    public void bidding2() {
-//        bidding_timer = new Timer();
-////        bidding_end_timer = new Timer();
+//        bidding_timer = new server.Timer();
+////        bidding_end_timer = new server.Timer();
 //        bidding_timer.schedule(bidding_task, 0, 1000);
 ////        bidding_end_timer.schedule(bidding_end_task, 4500);
 //    }
@@ -123,8 +124,8 @@ public class TimerManager {
 ////        bidding_end_timer.cancel();
 //        b_time = 4;
 //
-//        bidding_timer = new Timer();
-////        bidding_end_timer = new Timer();
+//        bidding_timer = new server.Timer();
+////        bidding_end_timer = new server.Timer();
 //        bidding_timer.schedule(bidding_task, 0, 1000);
 ////        bidding_end_timer.schedule(bidding_end_task, 4500);
 //    }

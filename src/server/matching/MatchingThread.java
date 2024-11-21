@@ -1,6 +1,11 @@
-package matching;
+package server.matching;
 
-import io.Output;
+import static server.AuctionServer.waitUsers;
+
+import java.util.List;
+import server.ClientHandler;
+import server.User;
+import server.io.Output;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -9,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
 
 public class MatchingThread implements Runnable {
 
@@ -37,19 +43,14 @@ public class MatchingThread implements Runnable {
         try {
 
             String clientName = in.readLine();
-            MatchingUser matchingUser = new MatchingUser(clientName);
+            MatchingUser matchingUser = new MatchingUser(clientName,socket);
             matchingQueue.add(matchingUser);
             System.out.println("클라이언트 \"" + clientName + "\" 가 연결되었습니다: " + socket);
 
             Output.INSTANCE.broadcastMessage("Matching;" + matchingQueue);
             if (matchingQueue.getMatchingSize() == 4) {
                 informMatching(out);
-                ClientHandler clientHandler = new ClientHandler(clientSocket);  //clientHandler에서 생성자에서 User생성
-                User user = clientHandler.getCurrentUser();
-                System.out.println(user.getName() +" ");
-                waitUsers.add(user);
-                clientHandler.start();
-                System.out.println(waitUsers.size())
+                startGame();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -69,6 +70,23 @@ public class MatchingThread implements Runnable {
                 System.out.println("Stopping message task.");
             }
         }, 3, 1, TimeUnit.SECONDS);
+    }
+
+    private void startGame(){
+        List<MatchingUser> matchingUsers = MatchingFactory.INSTANCE.getMatchingQueue().getMatchingUsers();
+        for (MatchingUser matchingUser : matchingUsers) {
+            try{
+                ClientHandler clientHandler = new ClientHandler(matchingUser.getSocket(),matchingUser);  //clientHandler에서 생성자에서 User생성
+                User user = clientHandler.getCurrentUser();
+                System.out.println(user.getName() +" ");
+                waitUsers.add(user);
+                clientHandler.start();
+                System.out.println(waitUsers.size());
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+
+        }
 
     }
 }

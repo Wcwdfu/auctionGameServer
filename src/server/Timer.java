@@ -1,3 +1,5 @@
+package server;
+
 public class Timer extends Thread {
     private int time;
 

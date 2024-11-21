@@ -1,8 +1,10 @@
-import io.Output;
+package server;
+
+import server.io.Output;
 import java.io.*;
 import java.net.*;
 import java.util.concurrent.LinkedBlockingQueue;
-import matching.MatchingThread;
+import server.matching.MatchingThread;
 
 public class AuctionServer {
     private static final int PORT = 12345;
@@ -25,8 +27,8 @@ public class AuctionServer {
                 Output.INSTANCE.addUserSocket(clientSocket);
                 new MatchingThread(clientSocket).run();
 
-               /* ClientHandler clientHandler = new ClientHandler(clientSocket);  //clientHandler에서 생성자에서 User생성
-                User user = clientHandler.getCurrentUser();
+               /* server.ClientHandler clientHandler = new server.ClientHandler(clientSocket);  //clientHandler에서 생성자에서 User생성
+                server.User user = clientHandler.getCurrentUser();
                 System.out.println(user.getName() +" ");
                 waitUsers.add(user);
                 clientHandler.start();

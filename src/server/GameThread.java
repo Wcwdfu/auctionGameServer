@@ -1,3 +1,5 @@
+package server;
+
 import java.util.*;
 
 public class GameThread extends Thread {
