@@ -47,10 +47,12 @@ public class MatchingThread implements Runnable {
             matchingQueue.add(matchingUser);
             System.out.println("클라이언트 \"" + clientName + "\" 가 연결되었습니다: " + socket);
 
+            //접속 현황 전송
             Output.INSTANCE.broadcastMessage("Matching;" + matchingQueue);
+
             if (matchingQueue.getMatchingSize() == 4) {
                 informMatching(out);
-                startGame();
+                //startGame();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -64,12 +66,14 @@ public class MatchingThread implements Runnable {
         messageTask = scheduler.scheduleAtFixedRate(() -> {
             if (count >= 0) {
                 Output.INSTANCE.broadcastMessage("MatchingFinished;" + count);
+                System.out.println("MatchingFinished;" + count);
                 count--;
             } else {
                 messageTask.cancel(false); // 반복 작업을 취소
                 System.out.println("Stopping message task.");
             }
         }, 3, 1, TimeUnit.SECONDS);
+        scheduler.schedule(this::startGame, 3 + count + 1, TimeUnit.SECONDS);
     }
 
     private void startGame(){
