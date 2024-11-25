@@ -10,8 +10,8 @@ public class TimerManager {
 //    private server.Timer bidding_timer;
 //    private server.Timer bidding_end_timer;
 
-    private int p_time = 6;
-    private int b_time = 4;
+    private int p_time = 10;
+    private int b_time = 5;
     private int ready = 5;
 
     private Timer timer;

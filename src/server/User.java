@@ -6,14 +6,16 @@ import java.util.HashMap;
 
 //접속한 server.User
 public class User {
-    private Socket sock;
+    private final Socket sock;
     private ClientHandler clientHandler;
     private String name;
     private boolean isPlaying;  //현재 게임 진행에 참여 중인지
     private boolean isParticipating; //경매 round 참여
-    private HashMap<String, Integer> goods = new HashMap<String, Integer>();   //게임 중에 모든 goods들
-    private HashMap<String, Integer> items = new HashMap<String, Integer>();
-    private int balance;  //잔액
+    private boolean oneChance; //경매 응찰,불응찰 여부
+    private HashMap<String, Integer> goods = new HashMap<String, Integer>();   //모든 굿즈들
+    private HashMap<String, Integer> items = new HashMap<String, Integer>();   //모든 아이템들
+    private int balance; //잔액
+    private int subsidy=1;
 
     public User(Socket sock, boolean isPlaying) {
         this.sock = sock;
@@ -31,15 +33,29 @@ public class User {
         this.name = name;
         balance = 100;
         this.clientHandler = clientHandler;
-        goods.put("쿠", 0); //"쿠", "건구스", "건덕이", "건붕이"
+        //"쿠", "건구스", "건덕이", "건붕이"
+        goods.put("쿠", 0);
         goods.put("건구스", 0);
         goods.put("건덕이", 0);
         goods.put("건붕이", 0);
+
+        //"황소의 분노" ,"일감호의 기적", "스턴건"
+        items.put("황소의 분노", 0);
+        items.put("일감호의 기적", 0);
+        items.put("스턴건", 0);
     }
 
 
     public boolean isPlaying() {
         return isPlaying;
+    }
+
+    public boolean isOneChance() {
+        return oneChance;
+    }
+
+    public void setOneChance(boolean oneChance) { // Setter
+        this.oneChance = oneChance;
     }
 
     public void setPlaying(boolean playing) {
@@ -58,15 +74,11 @@ public class User {
         return goods;
     }
 
-    public void setGoods(HashMap<String, Integer> goods) {
-        this.goods = goods;
-    }
-
     public void addGoods(String good) {
         goods.put(good, goods.get(good) + 1);
     }
 
-    public  HashMap<String, Integer> getItems() {
+    public HashMap<String, Integer> getItems() {
         return items;
     }
 
@@ -78,10 +90,6 @@ public class User {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public int getBalance() {
         return balance;
     }
@@ -89,10 +97,14 @@ public class User {
     public void subFunds(int amount) {
         balance -= amount;
     }
-
     public void addFunds(int amount) {
         balance += amount;
-        sendMessage("잔액 추가됨: " + amount + "원. 현재 잔액: " + balance + "원");
+    }
+    public void addSubsidy(int num){
+        subsidy+=1;
+    }
+    public int getSubsidy(){
+        return subsidy;
     }
 
     public void sendMessage(String message) {

@@ -27,12 +27,6 @@ public class AuctionServer {
                 Output.INSTANCE.addUserSocket(clientSocket);
                 new MatchingThread(clientSocket).run();
 
-               /* server.ClientHandler clientHandler = new server.ClientHandler(clientSocket);  //clientHandler에서 생성자에서 User생성
-                server.User user = clientHandler.getCurrentUser();
-                System.out.println(user.getName() +" ");
-                waitUsers.add(user);
-                clientHandler.start();
-                System.out.println(waitUsers.size());*/
             }
         } finally {
             listener.close();
