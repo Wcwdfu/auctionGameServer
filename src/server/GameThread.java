@@ -26,9 +26,7 @@ public class GameThread extends Thread {
 
     public GameThread() {
         endGame = false;
-        synchronized (AuctionServer.bidUsers) {  //솔직히 동기화 블럭 없어도 될 것 같음
-            players = AuctionServer.bidUsers.toArray(new User[AuctionServer.bidUsers.size()]);
-        }
+        players = AuctionServer.bidUsers.toArray(new User[AuctionServer.bidUsers.size()]);
     }
 
     public void run() {
@@ -43,23 +41,25 @@ public class GameThread extends Thread {
                 throw new RuntimeException(e);
             }
 
-            checkParticipation();
+            boolean skip = checkParticipation();
 
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            if(!skip) {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
-            ClientHandler.bidUsers_broadcastMessage("경매를 시작합니다!");
-            stageIsOngoing=true; //경매가 진행되는동안만 1,5원 호가 버튼 작동하게 하기 위함
-            timerManager.bidding();
-            ClientHandler.bidUsers_broadcastMessage("입찰 마감");
+                ClientHandler.bidUsers_broadcastMessage("경매를 시작합니다!");
+                stageIsOngoing=true; //경매가 진행되는동안만 1,5원 호가 버튼 작동하게 하기 위함
+                timerManager.bidding();
+                ClientHandler.bidUsers_broadcastMessage("입찰 마감");
 
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             endGame = endAuctionRound();
@@ -126,7 +126,7 @@ public class GameThread extends Thread {
     }
 
 
-    private void checkParticipation() {
+    private boolean checkParticipation() {
         ClientHandler.bidUsers_broadcastMessage("응찰하시겠습니까?");
         for (User player : players) {
             player.setOneChance(true);
@@ -146,6 +146,18 @@ public class GameThread extends Thread {
                 player.sendMessage("게임이 끝날때까지 대기합니다");
             }
         }
+
+        if(participatingUsers.isEmpty()) {
+            ClientHandler.bidUsers_broadcastMessage("경매 참여자가 없습니다.");
+            return true;
+        }
+        else if(participatingUsers.size() == 1) {
+            ClientHandler.bidUsers_broadcastMessage("경매 참여자가 한 명입니다.");
+            highestBidder = participatingUsers.get(0);
+            return true;
+        }
+
+        return false;
     }
 
 
