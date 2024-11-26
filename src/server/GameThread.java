@@ -153,7 +153,7 @@ public class GameThread extends Thread {
         }
         else if(participatingUsers.size() == 1) {
             ClientHandler.bidUsers_broadcastMessage("경매 참여자가 한 명입니다.");
-            highestBidder = participatingUsers.getFirst();
+            highestBidder = participatingUsers.get(0);
             return true;
         }
 
