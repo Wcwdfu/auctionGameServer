@@ -26,9 +26,7 @@ public class GameThread extends Thread {
 
     public GameThread() {
         endGame = false;
-        synchronized (AuctionServer.bidUsers) {  //솔직히 동기화 블럭 없어도 될 것 같음
-            players = AuctionServer.bidUsers.toArray(new User[AuctionServer.bidUsers.size()]);
-        }
+        players = AuctionServer.bidUsers.toArray(new User[AuctionServer.bidUsers.size()]);
     }
 
     public void run() {
