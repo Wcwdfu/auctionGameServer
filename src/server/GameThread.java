@@ -164,7 +164,7 @@ public class GameThread extends Thread {
             }
         }
         //for test
-        auctionItem = "일감호의 기적";
+//        auctionItem = "일감호의 기적";
 
         currentBid = 0;
         highestBidder = null;
