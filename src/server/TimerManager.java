@@ -16,7 +16,10 @@ public class TimerManager {
 
     private Timer timer;
 
-    
+    public Timer getTimer() {
+        return timer;
+    }
+
     TimerManager() {
         timer = new Timer(ready);
         timer.start();
@@ -27,6 +30,7 @@ public class TimerManager {
         }
         ClientHandler.bidUsers_broadcastMessage("게임 시작");
     }
+
 
     public void participating() {
         timer = new Timer(p_time);

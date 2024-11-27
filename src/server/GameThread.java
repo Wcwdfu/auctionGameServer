@@ -1,21 +1,20 @@
 package server;
 
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+
+import static server.ItemManager.itemActivation;
 
 public class GameThread extends Thread {
 
     //경매품목 - 굿즈(쿠,건덕이,건구스,건붕이)
-    private final List<String> goods = Arrays.asList("쿠", "건구스", "건덕이", "건붕이");
+    private static final List<String> goods = Arrays.asList("쿠", "건구스", "건덕이", "건붕이");
     //경매품목 - 아이템(황소의 분노, 일감호의 기적, 스턴건)
-    private final List<String> items = Arrays.asList("황소의 분노", "일감호의 기적", "스턴건");
+    private static final List<String> items = Arrays.asList("황소의 분노", "일감호의 기적", "스턴건");
     //경매품목 - 아이템
-    private static String auctionItem;
-    private User highestBidder;
+    public static String auctionItem;
+    public static User highestBidder;
     private int currentBid = 0;
-    private boolean endGame;
+    private static boolean endGame;
     private boolean stageIsOngoing;
     //게임에 참여한 player들 배열
     private User[] players;
@@ -24,13 +23,34 @@ public class GameThread extends Thread {
     private ArrayList<User> participatingUsers = new ArrayList<>();
     private TimerManager timerManager;
 
+    public static boolean isEndGame() {
+        return endGame;
+    }
+
+    public void setEndGame(boolean endGame) {
+        this.endGame = endGame;
+    }
+
+    public static List<String> getGoods() {
+        return goods;
+    }
+
+    public static List<String> getItems() {
+        return items;
+    }
+
     public GameThread() {
         endGame = false;
         players = AuctionServer.bidUsers.toArray(new User[AuctionServer.bidUsers.size()]);
+
+
+        
     }
 
     public void run() {
         timerManager = new TimerManager();
+
+//        ItemManager itemManager = new ItemManager();
 
         while(!endGame) {
             startNewAuctionRound();
@@ -49,10 +69,31 @@ public class GameThread extends Thread {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
+                
 
+                
                 ClientHandler.bidUsers_broadcastMessage("경매를 시작합니다!");
                 stageIsOngoing=true; //경매가 진행되는동안만 1,5원 호가 버튼 작동하게 하기 위함
                 timerManager.bidding();
+
+//                ///여기서 일감호의 기적 체크해야함
+//                if (itemActivation.get("일감호의 기적")) {
+////                    timerManager.interrupt();
+//                    itemActivation.replace("황소의 분노", false);
+//                    itemActivation.replace("일감호의 기적", false);
+//                    itemActivation.replace("스턴건", false);
+//
+//                    ClientHandler.bidUsers_broadcastMessage("곧 다음 라운드가 시작됩니다...");
+//                    try {
+//                        Thread.sleep(2000);
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                    continue;
+//                }
+//                ////////////////////////////////
+
+
                 ClientHandler.bidUsers_broadcastMessage("입찰 마감");
 
                 try {
@@ -63,6 +104,9 @@ public class GameThread extends Thread {
             }
 
             endGame = endAuctionRound();
+            itemActivation.replace("황소의 분노", false);
+            itemActivation.replace("일감호의 기적", false);
+            itemActivation.replace("스턴건", false);
             try {
                 Thread.sleep(6000);
             } catch (InterruptedException e) {
@@ -119,6 +163,8 @@ public class GameThread extends Thread {
                 auctionItem = "스턴건"; // 30% 확률
             }
         }
+        //for test
+        auctionItem = "일감호의 기적";
 
         currentBid = 0;
         highestBidder = null;
@@ -197,7 +243,15 @@ public class GameThread extends Thread {
         System.out.println("낙찰자와 승리자를 판정합니다.");
         ClientHandler.bidUsers_broadcastMessage("이번 라운드가 종료되었습니다.");
 
-        if (highestBidder != null) {
+        if (itemActivation.get("일감호의 기적")) {
+            if(goods.contains(auctionItem)) {  //낙찰 물건이 굿즈
+                highestBidder.addGoods(auctionItem);
+            }
+            else if(items.contains(auctionItem)) {  //낙찰 물건이 아이템
+                highestBidder.addItem(auctionItem);
+            }
+        }
+        else if (highestBidder != null) {
             highestBidder.subFunds(currentBid);
             ClientHandler.bidUsers_broadcastMessage("메인"+"익명의 유저에게 낙찰되었습니다. 축하드립니다!");
 
