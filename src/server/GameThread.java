@@ -29,6 +29,7 @@ public class GameThread extends Thread {
         players = AuctionServer.bidUsers.toArray(new User[AuctionServer.bidUsers.size()]);
     }
 
+    @Override
     public void run() {
         timerManager = new TimerManager();
 
