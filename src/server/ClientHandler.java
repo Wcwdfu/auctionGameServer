@@ -82,6 +82,17 @@ public class ClientHandler extends Thread {
                     currentUser.setOneChance(false);
                     currentUser.sendMessage("경매에 불응찰합니다");
 
+                } else if(userMessage.startsWith("스턴건")) {
+                    String targetUser = userMessage.split(" ")[1];
+                    System.out.println(targetUser);
+                    for(User user : AuctionServer.bidUsers) {
+                        if(user.getName().equals(targetUser)) {
+                            user.setOneChance(false);
+                            user.setParticipating(false);
+                            user.sendMessage("스턴건에 맞았습니다. 강제로 불응찰 상태로 전환됩니다.");
+                            System.out.println("스턴건: " + currentUser.getName() + "->" + user.getName());
+                        }
+                    }
                 }
             }
         } catch (IOException e) {
