@@ -24,6 +24,9 @@ public class GameThread extends Thread {
     private ArrayList<User> participatingUsers = new ArrayList<>();
     private TimerManager timerManager;
 
+    //황소의 분노
+    private boolean isAngerActive;
+
     public GameThread() {
         endGame = false;
         players = AuctionServer.bidUsers.toArray(new User[AuctionServer.bidUsers.size()]);
@@ -119,6 +122,9 @@ public class GameThread extends Thread {
             } else {
                 auctionItem = "스턴건"; // 30% 확률
             }
+
+            //황소의분노 필드 초기화
+            isAngerActive=false;
         }
 
         currentBid = 0;
@@ -198,7 +204,15 @@ public class GameThread extends Thread {
         System.out.println("낙찰자와 승리자를 판정합니다.");
         ClientHandler.bidUsers_broadcastMessage("이번 라운드가 종료되었습니다.");
 
-        if (highestBidder != null) {
+        if (isAngerActive) { // 황소의 분노를 사용한 경우 강제 유찰
+            ClientHandler.bidUsers_broadcastMessage("메인"+"황소의 분노로 이번 경매는 유찰되면 낙찰 금액 또한 회수 됩니다.");
+            //돈을 냈다면 회수
+            if (highestBidder != null) {
+                highestBidder.subFunds(currentBid);
+            }
+
+        }
+        else if (highestBidder != null) {
             highestBidder.subFunds(currentBid);
             ClientHandler.bidUsers_broadcastMessage("메인"+"익명의 유저에게 낙찰되었습니다. 축하드립니다!");
 
@@ -286,5 +300,18 @@ public class GameThread extends Thread {
             }
         }
         return false;
+    }
+
+    //황소의 분노 사용함수
+    public void useAnger(String message){
+        String[] strings = message.split(";");
+        String itemName=strings[1];
+        String userName=strings[2];
+        for (User player : players) {
+            if(player.getName().equals(userName)){
+                player.useItem(itemName);
+            }
+        }
+        this.isAngerActive=true;
     }
 }

@@ -61,7 +61,7 @@ public class ClientHandler extends Thread {
         try {
             while (true) {
                 userMessage = in.readLine();
-
+                System.out.println("userMessage: "+userMessage);
                 if (userMessage.startsWith("호가")) {
                     int bidAmount = Integer.parseInt(userMessage.split(" ")[1]);  //호가 금액
                     WaitingThread.gameThread.placeBid(currentUser, bidAmount);
@@ -81,8 +81,11 @@ public class ClientHandler extends Thread {
                     currentUser.setParticipating(false);
                     currentUser.setOneChance(false);
                     currentUser.sendMessage("경매에 불응찰합니다");
+                } else if(userMessage.startsWith("ItemUse;황소의 분노")){
 
+                    WaitingThread.gameThread.useAnger(userMessage);
                 }
+
             }
         } catch (IOException e) {
             System.out.println("연결 종료: " + currentUser.getName());
