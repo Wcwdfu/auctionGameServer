@@ -169,6 +169,7 @@ public class GameThread extends Thread {
         //for test
 //        auctionItem = "일감호의 기적";
 
+        auctionItem = "스턴건";
         currentBid = 0;
         highestBidder = null;
         ClientHandler.bidUsers_broadcastMessage("경매를 시작합니다. 경매품목: " + auctionItem);
