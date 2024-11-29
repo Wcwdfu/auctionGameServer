@@ -166,8 +166,6 @@ public class GameThread extends Thread {
             //황소의분노 필드 초기화
             isAngerActive = false;
         }
-        //for test
-//        auctionItem = "일감호의 기적";
 
         auctionItem = "스턴건";
         currentBid = 0;
