@@ -1,18 +1,22 @@
 package server;
 
+import static server.ItemManager.itemActivation;
+
 public class Timer extends Thread {
     private int time;
-
 
     public Timer(int time) {
         this.time = time;
     }
 
+
+
     @Override
     public void run() {
         int timeInitial = time;
 
-        while (time > 0) {
+        while (time > 0 && !itemActivation.get("일감호의 기적")) {
+
             ClientHandler.bidUsers_broadcastMessage(time + "초 남았습니다.");
             try {
                 Thread.sleep(1000);

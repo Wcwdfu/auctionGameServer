@@ -4,6 +4,9 @@ import java.io.*;
 import java.net.*;
 import server.matching.MatchingUser;
 
+import static server.ItemManager.itemActivation;
+import static server.ItemManager.miracleActivation;
+
 
 public class ClientHandler extends Thread {
     private final Socket socket;
@@ -58,10 +61,12 @@ public class ClientHandler extends Thread {
         String userMessage = null;
         String chatMessage = null;
 
+        ItemManager itemManager = new ItemManager();
+
         try {
             while (true) {
                 userMessage = in.readLine();
-
+                System.out.println("userMessage: "+userMessage);
                 if (userMessage.startsWith("호가")) {
                     int bidAmount = Integer.parseInt(userMessage.split(" ")[1]);  //호가 금액
                     WaitingThread.gameThread.placeBid(currentUser, bidAmount);
@@ -82,6 +87,22 @@ public class ClientHandler extends Thread {
                     currentUser.setOneChance(false);
                     currentUser.sendMessage("경매에 불응찰합니다");
 
+                } else if(userMessage.startsWith("ItemUse;황소의 분노")){
+                    WaitingThread.gameThread.useAnger(userMessage);
+
+                } else if (userMessage.startsWith("일감호의 기적")) {
+                    if (currentUser.isParticipating()) {
+                        if (currentUser.getItems().get("일감호의 기적") > 0) {
+                            miracleActivation(currentUser);
+                            itemActivation.replace("일감호의 기적", true);
+                            System.out.println("일감호의 기적 발동됨");
+                        } else {
+                            out.println("일감호의 기적 아이템을 보유하고있지 않습니다");
+                        }
+
+                    } else {
+                        out.println("응찰 상태에서만 사용가능합니다!");
+                    }
                 } else if(userMessage.startsWith("스턴건")) {
                     String targetUser = userMessage.split(" ")[1];
                     System.out.println(targetUser);
@@ -94,6 +115,7 @@ public class ClientHandler extends Thread {
                         }
                     }
                 }
+
             }
         } catch (IOException e) {
             System.out.println("연결 종료: " + currentUser.getName());
