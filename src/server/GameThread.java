@@ -23,6 +23,10 @@ public class GameThread extends Thread {
     private ArrayList<User> participatingUsers = new ArrayList<>();
     private TimerManager timerManager;
 
+
+    //황소의 분노
+    private boolean isAngerActive;
+
     public static boolean isEndGame() {
         return endGame;
     }
@@ -39,20 +43,21 @@ public class GameThread extends Thread {
         return items;
     }
 
+
     public GameThread() {
         endGame = false;
         players = AuctionServer.bidUsers.toArray(new User[AuctionServer.bidUsers.size()]);
 
 
-        
     }
 
+    @Override
     public void run() {
         timerManager = new TimerManager();
 
 //        ItemManager itemManager = new ItemManager();
 
-        while(!endGame) {
+        while (!endGame) {
             startNewAuctionRound();
 
             try {
@@ -63,17 +68,15 @@ public class GameThread extends Thread {
 
             boolean skip = checkParticipation();
 
-            if(!skip) {
+            if (!skip) {
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                
 
-                
                 ClientHandler.bidUsers_broadcastMessage("경매를 시작합니다!");
-                stageIsOngoing=true; //경매가 진행되는동안만 1,5원 호가 버튼 작동하게 하기 위함
+                stageIsOngoing = true; //경매가 진행되는동안만 1,5원 호가 버튼 작동하게 하기 위함
                 timerManager.bidding();
 
 //                ///여기서 일감호의 기적 체크해야함
@@ -92,7 +95,6 @@ public class GameThread extends Thread {
 //                    continue;
 //                }
 //                ////////////////////////////////
-
 
                 ClientHandler.bidUsers_broadcastMessage("입찰 마감");
 
@@ -116,10 +118,8 @@ public class GameThread extends Thread {
 
     }
 
-
     // 위 run을 깔끔하게 정리해보려 했으나 버그이슈로 주석처리
 //    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
 
 //    public void run() {
 //        timerManager = new TimerManager();
@@ -162,6 +162,9 @@ public class GameThread extends Thread {
             } else {
                 auctionItem = "스턴건"; // 30% 확률
             }
+
+            //황소의분노 필드 초기화
+            isAngerActive = false;
         }
         //for test
 //        auctionItem = "일감호의 기적";
@@ -181,9 +184,9 @@ public class GameThread extends Thread {
         timerManager.participating();  //10초 동안 응찰받기
         ClientHandler.bidUsers_broadcastMessage("응찰 마감");
 
-        for(User player : players) {
+        for (User player : players) {
 
-            if(player.isParticipating()){  //이번 round 참여
+            if (player.isParticipating()) {  //이번 round 참여
                 participatingUsers.add(player);
                 player.setParticipating(true);
                 ClientHandler.bidUsers_broadcastMessage("참여명단" + player.getName() + " 님이 경매에 참여했습니다");
@@ -193,11 +196,10 @@ public class GameThread extends Thread {
             }
         }
 
-        if(participatingUsers.isEmpty()) {
+        if (participatingUsers.isEmpty()) {
             ClientHandler.bidUsers_broadcastMessage("경매 참여자가 없습니다.");
             return true;
-        }
-        else if(participatingUsers.size() == 1) {
+        } else if (participatingUsers.size() == 1) {
             ClientHandler.bidUsers_broadcastMessage("경매 참여자가 한 명입니다.");
             highestBidder = participatingUsers.get(0);
             return true;
@@ -210,9 +212,8 @@ public class GameThread extends Thread {
     //입찰 최고가 갱신
     public synchronized void placeBid(User player, int bidAmount) {
 
-
-        if(stageIsOngoing){
-            if(player == highestBidder) {  //현재 자신이 최고 입찰자라면 여러번 갱신되면 안됨
+        if (stageIsOngoing) {
+            if (player == highestBidder) {  //현재 자신이 최고 입찰자라면 여러번 갱신되면 안됨
                 return;
             }
 
@@ -222,10 +223,9 @@ public class GameThread extends Thread {
                 interruptTimer();
                 currentBid = tempBid;
                 highestBidder = player;
-                ClientHandler.bidUsers_broadcastMessage("현재입찰가: " + currentBid + "원 "+"[+"+bidAmount+"]");
-                player.sendMessage("소지금"+player.getBalance());
-            }
-            else if(player.isParticipating()){  //잔액 부족
+                ClientHandler.bidUsers_broadcastMessage("현재입찰가: " + currentBid + "원 " + "[+" + bidAmount + "]");
+                player.sendMessage("소지금" + player.getBalance());
+            } else if (player.isParticipating()) {  //잔액 부족
                 player.sendMessage("잔액이 부족합니다!");
             } else {
                 player.sendMessage("경매에 불응찰한 상태입니다.");
@@ -239,43 +239,49 @@ public class GameThread extends Thread {
 
 
     public boolean endAuctionRound() {
-        stageIsOngoing=false;
+        stageIsOngoing = false;
         System.out.println("낙찰자와 승리자를 판정합니다.");
         ClientHandler.bidUsers_broadcastMessage("이번 라운드가 종료되었습니다.");
 
-        if (itemActivation.get("일감호의 기적")) {
-            if(goods.contains(auctionItem)) {  //낙찰 물건이 굿즈
-                highestBidder.addGoods(auctionItem);
-            }
-            else if(items.contains(auctionItem)) {  //낙찰 물건이 아이템
-                highestBidder.addItem(auctionItem);
+        if (isAngerActive) { // 황소의 분노를 사용한 경우 강제 유찰
+            ClientHandler.bidUsers_broadcastMessage("메인" + "황소의 분노로 이번 경매는 유찰되면 낙찰 금액 또한 회수 됩니다.");
+            //돈을 냈다면 회수
+            if (highestBidder != null) {
+                highestBidder.subFunds(currentBid);
             }
         }
-        else if (highestBidder != null) {
-            highestBidder.subFunds(currentBid);
-            ClientHandler.bidUsers_broadcastMessage("메인"+"익명의 유저에게 낙찰되었습니다. 축하드립니다!");
 
-            if(goods.contains(auctionItem)) {  //낙찰 물건이 굿즈
+        else if (itemActivation.get("일감호의 기적")) {
+            if (goods.contains(auctionItem)) {  //낙찰 물건이 굿즈
                 highestBidder.addGoods(auctionItem);
-            }
-            else if(items.contains(auctionItem)) {  //낙찰 물건이 아이템
+            } else if (items.contains(auctionItem)) {  //낙찰 물건이 아이템
                 highestBidder.addItem(auctionItem);
-            }else{
+            }
+
+        } else if (highestBidder != null) {
+            highestBidder.subFunds(currentBid);
+            ClientHandler.bidUsers_broadcastMessage("메인" + "익명의 유저에게 낙찰되었습니다. 축하드립니다!");
+
+            if (goods.contains(auctionItem)) {  //낙찰 물건이 굿즈
+                highestBidder.addGoods(auctionItem);
+            } else if (items.contains(auctionItem)) {  //낙찰 물건이 아이템
+                highestBidder.addItem(auctionItem);
+            } else {
                 highestBidder.addSubsidy(1);
             }
         } else {
-            ClientHandler.bidUsers_broadcastMessage("메인"+"이번 라운드는 유찰되었습니다.");
+            ClientHandler.bidUsers_broadcastMessage("메인" + "이번 라운드는 유찰되었습니다.");
         }
 
         // 라운드 끝마다 플레이어들의 소지금계산, 소지금, 소지품목 정보 클라이언트로 전송
         for (User player : players) {
             if (!player.isParticipating()) {
-                player.addFunds(5*player.getSubsidy());
+                player.addFunds(5 * player.getSubsidy());
             }
 
             player.setParticipating(false); //경매 round 참여 불참
             participatingUsers.remove(player);
-            player.sendMessage("소지금"+player.getBalance());
+            player.sendMessage("소지금" + player.getBalance());
 
             // 모든 소유품들의 정보 전송
             StringBuilder allItemsMessage = new StringBuilder("소유 물품: ");
@@ -291,20 +297,21 @@ public class GameThread extends Thread {
             player.sendMessage(allItemsMessage.toString());
         }
 
-        if(checkWinner()) {
+        if (checkWinner()) {
             System.out.println("게임 종료");
             ClientHandler.bidUsers_broadcastMessage("게임 종료");
             return true;  //endGame = true
         }
 
         return false; //endGame = false
+
     }
 
     private boolean checkWinner() {
-        for(User player : players) {
+        for (User player : players) {
             HashMap<String, Integer> goods = player.getGoods();
             System.out.print(player.getName() + ": ");
-            for(Map.Entry<String, Integer> entry : goods.entrySet()) {
+            for (Map.Entry<String, Integer> entry : goods.entrySet()) {
                 System.out.print(entry.getKey() + "(" + entry.getValue() + "개)");
             }
             System.out.println();
@@ -321,8 +328,8 @@ public class GameThread extends Thread {
     //건덕이 건구스 건붕이 건구스 건붕이 건국스 쿠 쿠 쿠
     private boolean allElementAreDifferent(HashMap<String, Integer> goods) {
 
-        for(Integer value : goods.values()) {
-            if(value == 0) {
+        for (Integer value : goods.values()) {
+            if (value == 0) {
                 return false;
             }
         }
@@ -333,11 +340,24 @@ public class GameThread extends Thread {
     //승리조건 판정 중 같은굿즈 조건판정
     private boolean allElementAreSame(HashMap<String, Integer> goods) {
 
-        for(Integer value : goods.values()) {
-            if(value >= 3) {
+        for (Integer value : goods.values()) {
+            if (value >= 3) {
                 return true;
             }
         }
         return false;
+    }
+
+    //황소의 분노 사용함수
+    public void useAnger(String message) {
+        String[] strings = message.split(";");
+        String itemName = strings[1];
+        String userName = strings[2];
+        for (User player : players) {
+            if (player.getName().equals(userName)) {
+                player.useItem(itemName);
+            }
+        }
+        this.isAngerActive = true;
     }
 }
