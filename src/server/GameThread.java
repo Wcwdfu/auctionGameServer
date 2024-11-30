@@ -13,6 +13,7 @@ public class GameThread extends Thread {
     //경매품목 - 아이템
     public static String auctionItem;
     public static User highestBidder;
+    private HashMap<User, Integer> userBidPrices = new HashMap<>();
     private int currentBid = 0;
     private static boolean endGame;
     private boolean stageIsOngoing;
@@ -26,6 +27,7 @@ public class GameThread extends Thread {
 
     //황소의 분노
     private boolean isAngerActive;
+
 
     public static boolean isEndGame() {
         return endGame;
@@ -44,11 +46,18 @@ public class GameThread extends Thread {
     }
 
 
+    public int participatingNum() {
+        return participatingUsers.size();
+    }
+
+
     public GameThread() {
         endGame = false;
         players = AuctionServer.bidUsers.toArray(new User[AuctionServer.bidUsers.size()]);
 
-
+        for(User user : players) {
+            userBidPrices.put(user, 0);
+        }
     }
 
     @Override
@@ -169,10 +178,32 @@ public class GameThread extends Thread {
         //for test
 //        auctionItem = "일감호의 기적";
 
-        auctionItem = "스턴건";
+//        auctionItem = "스턴건";
+
+        initializeBidPrice();
+        ClientHandler.bidUsers_broadcastMessage("경매를 시작합니다. 경매품목: " + auctionItem);
+    }
+
+    private void initializeBidPrice() {
+        for(User user : players) {
+            userBidPrices.replace(user, 0);
+        }
+
         currentBid = 0;
         highestBidder = null;
-        ClientHandler.bidUsers_broadcastMessage("경매를 시작합니다. 경매품목: " + auctionItem);
+    }
+
+    private void calculateHighestBidder() {
+        int max = 0;
+        for(Map.Entry<User, Integer> entry : userBidPrices.entrySet()) {
+            if(max < entry.getValue()) {
+                highestBidder = entry.getKey();
+                max = entry.getValue();
+            }
+        }
+        currentBid = max;
+        if(currentBid == 0)
+            highestBidder = null;
     }
 
 
@@ -222,8 +253,10 @@ public class GameThread extends Thread {
 
             if (player.isParticipating() && player.getBalance() >= tempBid) { //해당 player가 그만큼의 돈을 가지고 있는지
                 interruptTimer();
-                currentBid = tempBid;
-                highestBidder = player;
+                userBidPrices.replace(player, tempBid);
+                calculateHighestBidder();
+//                currentBid = tempBid;
+//                highestBidder = player;
                 ClientHandler.bidUsers_broadcastMessage("현재입찰가: " + currentBid + "원 " + "[+" + bidAmount + "]");
                 player.sendMessage("소지금" + player.getBalance());
             } else if (player.isParticipating()) {  //잔액 부족
@@ -276,11 +309,12 @@ public class GameThread extends Thread {
 
         // 라운드 끝마다 플레이어들의 소지금계산, 소지금, 소지품목 정보 클라이언트로 전송
         for (User player : players) {
-            if (!player.isParticipating()) {
+            if (!player.isParticipating() && !player.isStungun()) {
                 player.addFunds(5 * player.getSubsidy());
             }
 
             player.setParticipating(false); //경매 round 참여 불참
+            player.setStungun(false);
             participatingUsers.remove(player);
             player.sendMessage("소지금" + player.getBalance());
 
@@ -360,5 +394,32 @@ public class GameThread extends Thread {
             }
         }
         this.isAngerActive = true;
+    }
+
+    public void useStunGun(String targetUser, User currentUser) {
+        currentUser.useItem("스턴건");
+
+        for(User user : AuctionServer.bidUsers) {
+            if(user.getName().equals(targetUser)) {
+                user.setOneChance(false);
+                user.setParticipating(false);
+                user.setStungun(true);
+                user.sendMessage("스턴건에 맞았습니다. 강제로 불응찰 상태로 전환됩니다.");
+                ClientHandler.bidUsers_broadcastMessage("participatingListUpdate " + targetUser);
+                participatingUsers.remove(user);
+
+                userBidPrices.replace(user, 0);
+                calculateHighestBidder();
+
+                if(participatingUsers.size() == 1) {
+                    timerManager.interrupt();
+                    highestBidder = participatingUsers.get(0);
+                    currentBid = 0;
+                } else if (participatingUsers.size() == 0) {
+                    timerManager.interrupt();
+                }
+                break;
+            }
+        }
     }
 }

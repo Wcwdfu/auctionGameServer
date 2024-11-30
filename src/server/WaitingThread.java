@@ -3,7 +3,7 @@ package server;
 public class WaitingThread extends Thread {
 
     public static GameThread gameThread;
-    public static int gamePlayers_num = 2;
+    public static int gamePlayers_num = 4;
 
     public WaitingThread() {
         System.out.println("server.WaitingThread constructor");
