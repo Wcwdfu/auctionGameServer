@@ -21,6 +21,7 @@ public class Timer extends Thread {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
+                if(WaitingThread.gameThread.participatingNum() < 2) break;
                 time = timeInitial;
                 continue;
             }

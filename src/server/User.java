@@ -16,6 +16,8 @@ public class User {
     private HashMap<String, Integer> items = new HashMap<String, Integer>();   //모든 아이템들
     private int balance; //잔액
     private int subsidy=1;
+    private boolean stungun; //스턴건 맞았는지
+
 
     public User(Socket sock, boolean isPlaying) {
         this.sock = sock;
@@ -118,5 +120,14 @@ public class User {
     public void useItem(String itemName) {
             Integer integer = items.get(itemName);
         items.put(itemName,integer-1);
+    }
+
+
+    public boolean isStungun() {
+        return stungun;
+    }
+
+    public void setStungun(boolean stungun) {
+        this.stungun = stungun;
     }
 }
