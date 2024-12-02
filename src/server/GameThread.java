@@ -307,9 +307,12 @@ public class GameThread extends Thread {
 
         // 라운드 끝마다 플레이어들의 소지금계산, 소지금, 소지품목 정보 클라이언트로 전송
         for (User player : players) {
+            //경매 불응찰시 5원 주기(스턴건으로인한 불응찰은 제외)
             if (!player.isParticipating() && !player.isStungun()) {
-                player.addFunds(5 * player.getSubsidy());
+                player.addFunds(5); //
             }
+            //지원금은 경매 참불 여부 상관없이 제공
+            player.addFunds(5 * player.getSubsidy());
 
             player.setParticipating(false); //경매 round 참여 불참
             player.setStungun(false);
