@@ -257,6 +257,8 @@ public class GameThread extends Thread {
 //                highestBidder = player;
                 ClientHandler.bidUsers_broadcastMessage("현재입찰가: " + currentBid + "원 " + "[+" + bidAmount + "]");
                 player.sendMessage("소지금" + player.getBalance());
+
+                ClientHandler.bidUsers_broadcastMessage("호가효과음");
             } else if (player.isParticipating()) {  //잔액 부족
                 player.sendMessage("잔액이 부족합니다!");
             } else {
@@ -270,13 +272,14 @@ public class GameThread extends Thread {
     }
 
 
+    // 한 라운드의 종료
     public boolean endAuctionRound() {
         stageIsOngoing = false;
         System.out.println("낙찰자와 승리자를 판정합니다.");
         ClientHandler.bidUsers_broadcastMessage("이번 라운드가 종료되었습니다.");
 
         if (isAngerActive) { // 황소의 분노를 사용한 경우 강제 유찰
-            ClientHandler.bidUsers_broadcastMessage("메인" + "황소의 분노로 이번 경매는 유찰되면 낙찰 금액 또한 회수 됩니다.");
+            ClientHandler.bidUsers_broadcastMessage("메인" + "누군가 황소의 분노를 사용하여 이번 라운드는 강제유찰 되었습니다.");
             //돈을 냈다면 회수
             if (highestBidder != null) {
                 highestBidder.subFunds(currentBid);
@@ -353,7 +356,7 @@ public class GameThread extends Thread {
             System.out.println();
             if (allElementAreDifferent(goods) || allElementAreSame(goods)) {
                 System.out.println("승리자는 " + player.getName());
-                ClientHandler.bidUsers_broadcastMessage("승리자는 " + player.getName());
+                ClientHandler.bidUsers_broadcastMessage("메인"+"승리자는 " + player.getName()+"님 입니다. 축하합니다!");
                 return true;
             }
         }
@@ -407,6 +410,7 @@ public class GameThread extends Thread {
                 user.setStungun(true);
                 user.sendMessage("스턴건에 맞았습니다. 강제로 불응찰 상태로 전환됩니다.");
                 ClientHandler.bidUsers_broadcastMessage("participatingListUpdate " + targetUser);
+                ClientHandler.bidUsers_broadcastMessage("메인"+targetUser+"님이 스턴건을 맞아 강제불응찰 상태로 변경됩니다.");
                 participatingUsers.remove(user);
 
                 userBidPrices.replace(user, 0);

@@ -43,8 +43,8 @@ public class User {
 
         //"황소의 분노" ,"일감호의 기적", "스턴건"
         items.put("황소의 분노", 1);
-        items.put("일감호의 기적", 0);
-        items.put("스턴건", 0);
+        items.put("일감호의 기적", 1);
+        items.put("스턴건", 1);
     }
 
 
