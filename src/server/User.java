@@ -15,7 +15,7 @@ public class User {
     private HashMap<String, Integer> goods = new HashMap<String, Integer>();   //모든 굿즈들
     private HashMap<String, Integer> items = new HashMap<String, Integer>();   //모든 아이템들
     private int balance; //잔액
-    private int subsidy=1;
+    private int subsidy=0;
     private boolean stungun; //스턴건 맞았는지
 
 
@@ -43,8 +43,8 @@ public class User {
 
         //"황소의 분노" ,"일감호의 기적", "스턴건"
         items.put("황소의 분노", 1);
-        items.put("일감호의 기적", 0);
-        items.put("스턴건", 0);
+        items.put("일감호의 기적", 1);
+        items.put("스턴건", 1);
     }
 
 
