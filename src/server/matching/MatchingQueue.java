@@ -25,6 +25,10 @@ public class MatchingQueue {
         return matchingUserQueue;
     }
 
+    public void clear(){
+        matchingUserQueue.clear();
+    }
+
     @Override
     public String toString(){
         StringJoiner stringJoiner = new StringJoiner(",");

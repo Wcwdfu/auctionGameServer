@@ -91,6 +91,6 @@ public class MatchingThread implements Runnable {
             }
 
         }
-
+        MatchingFactory.INSTANCE.getMatchingQueue().clear();
     }
 }

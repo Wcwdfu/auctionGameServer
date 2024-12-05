@@ -127,4 +127,17 @@ public class ClientHandler extends Thread {
             }
         }
     }
+
+    //당첨자에게는 본인이 낙찰 받았음을 공지하고
+    //나머지는 익명의 낙찰만 공지한다.
+    public static void bi_broadcastMessage(String userName) {
+        for (User client : AuctionServer.bidUsers) {
+            if(client.getName().equals(userName)){
+                client.sendMessage("낙찰받았습니다. 축하합니다!");
+            }
+            else{
+                client.sendMessage("익명의 유저에게 낙찰되었습니다. 축하드립니다!");
+            }
+        }
+    }
 }
