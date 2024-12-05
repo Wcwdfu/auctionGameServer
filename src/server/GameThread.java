@@ -302,7 +302,7 @@ public class GameThread extends Thread {
 
         } else if (highestBidder != null) {
             highestBidder.subFunds(currentBid);
-            ClientHandler.bidUsers_broadcastMessage("메인" + "익명의 유저에게 낙찰되었습니다. 축하드립니다!");
+            ClientHandler.bi_broadcastMessage(highestBidder.getName());
 
             if (goods.contains(auctionItem)) {  //낙찰 물건이 굿즈
                 highestBidder.addGoods(auctionItem);
