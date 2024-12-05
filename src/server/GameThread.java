@@ -67,6 +67,13 @@ public class GameThread extends Thread {
 //        ItemManager itemManager = new ItemManager();
 
         while (!endGame) {
+//            ClientHandler.bidUsers_broadcastMessage("승리자는 kyu");
+//            try {
+//                sleep(30000);
+//
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
             startNewAuctionRound();
 
             try {
