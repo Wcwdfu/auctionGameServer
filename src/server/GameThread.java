@@ -25,10 +25,6 @@ public class GameThread extends Thread {
     private TimerManager timerManager;
 
 
-    //황소의 분노
-    private boolean isAngerActive;
-
-
     public static boolean isEndGame() {
         return endGame;
     }
@@ -163,7 +159,7 @@ public class GameThread extends Thread {
         Random random = new Random();
 
         // 60% 확률로 굿즈, 40% 확률로 아이템 선택
-        if (random.nextInt(100) < 60) {
+        if (random.nextInt(100) < 50) {
             // 굿즈 선택: 4개 중 하나를 동일한 확률로 선택
             auctionItem = goods.get(random.nextInt(goods.size()));
         } else {
@@ -178,9 +174,6 @@ public class GameThread extends Thread {
             } else {
                 auctionItem = "스턴건"; // 30% 확률
             }
-
-            //황소의분노 필드 초기화
-            isAngerActive = false;
         }
 
 //        auctionItem = "스턴건";
@@ -285,7 +278,7 @@ public class GameThread extends Thread {
         System.out.println("낙찰자와 승리자를 판정합니다.");
         ClientHandler.bidUsers_broadcastMessage("이번 라운드가 종료되었습니다.");
 
-        if (isAngerActive) { // 황소의 분노를 사용한 경우 강제 유찰
+        if (itemActivation.get("황소의 분노")) { // 황소의 분노를 사용한 경우 강제 유찰
             ClientHandler.bidUsers_broadcastMessage("메인" + "누군가 황소의 분노를 사용하여 이번 라운드는 강제유찰 되었습니다.");
             //돈을 냈다면 회수
             if (highestBidder != null) {
@@ -404,7 +397,7 @@ public class GameThread extends Thread {
                 player.useItem(itemName);
             }
         }
-        this.isAngerActive = true;
+        itemActivation.replace("황소의 분노", true);
     }
 
     public void useStunGun(String targetUser, User currentUser) {
