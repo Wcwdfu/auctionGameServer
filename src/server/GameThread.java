@@ -159,16 +159,16 @@ public class GameThread extends Thread {
         Random random = new Random();
 
         // 60% 확률로 굿즈, 40% 확률로 아이템 선택
-        if (random.nextInt(100) < 50) {
+        if (random.nextInt(100) < 60) {
             // 굿즈 선택: 4개 중 하나를 동일한 확률로 선택
             auctionItem = goods.get(random.nextInt(goods.size()));
         } else {
             // 아이템 선택(지원금10%, 외 나머지3개 30%동일)
             int itemChance = random.nextInt(100);
-            if (itemChance < 10) {
-                auctionItem = "건구스의 지원금"; // 10% 확률
+            if (itemChance < 15) {
+                auctionItem = "건구스의 지원금"; // 15% 확률
             } else if (itemChance < 40) {
-                auctionItem = "황소의 분노"; // 30% 확률
+                auctionItem = "황소의 분노"; // 25% 확률
             } else if (itemChance < 70) {
                 auctionItem = "일감호의 기적"; // 30% 확률
             } else {

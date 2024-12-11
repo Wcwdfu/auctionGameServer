@@ -40,7 +40,6 @@ public class TimerManager {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-//        server.ClientHandler.bidUsers_broadcastMessage("응찰 마감");
     }
 
     public void bidding() {
